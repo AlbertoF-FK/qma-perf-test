@@ -1,0 +1,1897 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>QMA Global Performance Test</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<style>
+  :root {
+    --bg: #f4f3f0;
+    --surface: #ffffff;
+    --surface2: #f9f8f6;
+    --border: #e5e3de;
+    --border2: #d0cec8;
+    --text: #1a1916;
+    --text2: #6b6963;
+    --text3: #9e9b95;
+    --accent: #1a4fad;
+    --accent-bg: #e8eef9;
+    --veeva: #0c6e8c;
+    --veeva-bg: #e4f4f9;
+    --iqvia: #2d5a27;
+    --iqvia-bg: #e8f4e6;
+    --success: #1e6b3e;
+    --success-bg: #e6f4ec;
+    --warning: #8a4f0a;
+    --warning-bg: #fef3e2;
+    --danger: #8b1d1d;
+    --danger-bg: #fdeaea;
+    --radius: 10px;
+    --radius-sm: 6px;
+    --shadow: 0 1px 3px rgba(0,0,0,0.08), 0 1px 2px rgba(0,0,0,0.04);
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    font-size: 14px;
+    line-height: 1.5;
+  }
+
+  /* LAYOUT */
+  .app { display: flex; min-height: 100vh; }
+
+  /* SIDEBAR */
+  .sidebar {
+    width: 240px;
+    min-width: 240px;
+    background: var(--surface);
+    border-right: 1px solid var(--border);
+    display: flex;
+    flex-direction: column;
+    padding: 0;
+    position: sticky;
+    top: 0;
+    height: 100vh;
+    overflow-y: auto;
+  }
+  .sidebar-logo {
+    padding: 20px 20px 16px;
+    border-bottom: 1px solid var(--border);
+  }
+  .sidebar-logo .brand {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text);
+    letter-spacing: 0.02em;
+    text-transform: uppercase;
+  }
+  .sidebar-logo .sub {
+    font-size: 11px;
+    color: var(--text3);
+    margin-top: 2px;
+  }
+  .sidebar-logo .badge {
+    display: inline-block;
+    margin-top: 8px;
+    background: var(--accent-bg);
+    color: var(--accent);
+    font-size: 10px;
+    font-weight: 600;
+    padding: 2px 8px;
+    border-radius: 20px;
+    letter-spacing: 0.04em;
+  }
+  .nav-section { padding: 12px 0; }
+  .nav-label {
+    font-size: 10px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--text3);
+    padding: 4px 20px 6px;
+  }
+  .nav-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 8px 20px;
+    cursor: pointer;
+    border-radius: 0;
+    transition: background 0.12s;
+    font-size: 13.5px;
+    color: var(--text2);
+    border-left: 2px solid transparent;
+  }
+  .nav-item:hover { background: var(--bg); }
+  .nav-item.active {
+    background: var(--accent-bg);
+    color: var(--accent);
+    font-weight: 500;
+    border-left-color: var(--accent);
+  }
+  .nav-item .icon { font-size: 16px; opacity: 0.7; }
+  .nav-item.active .icon { opacity: 1; }
+
+  .sidebar-footer {
+    margin-top: auto;
+    padding: 16px 20px;
+    border-top: 1px solid var(--border);
+  }
+  .user-chip {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .user-avatar {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background: var(--accent-bg);
+    color: var(--accent);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 11px;
+    font-weight: 600;
+  }
+  .user-name { font-size: 12.5px; font-weight: 500; }
+  .user-role { font-size: 11px; color: var(--text3); }
+
+  /* MAIN */
+  .main { flex: 1; overflow-y: auto; }
+
+  /* PAGE HEADER */
+  .page-header {
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    padding: 20px 32px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    position: sticky;
+    top: 0;
+    z-index: 10;
+  }
+  .page-title { font-size: 16px; font-weight: 600; }
+  .page-subtitle { font-size: 12px; color: var(--text3); margin-top: 1px; }
+  .header-actions { display: flex; gap: 8px; align-items: center; }
+
+  /* CONTENT */
+  .content { padding: 28px 32px; }
+
+  /* CARDS */
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 20px;
+    box-shadow: var(--shadow);
+  }
+  .card-title {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text);
+    margin-bottom: 16px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .card-title .ct-icon { opacity: 0.5; font-size: 15px; }
+
+  /* GRID */
+  .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px; }
+  .grid-4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; }
+
+  /* METRIC CARDS */
+  .metric {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    padding: 14px 16px;
+  }
+  .metric-label { font-size: 11px; color: var(--text3); text-transform: uppercase; letter-spacing: 0.06em; font-weight: 500; }
+  .metric-value { font-size: 26px; font-weight: 600; margin-top: 4px; line-height: 1; }
+  .metric-sub { font-size: 11px; color: var(--text3); margin-top: 4px; }
+  .metric.green .metric-value { color: var(--success); }
+  .metric.orange .metric-value { color: var(--warning); }
+  .metric.red .metric-value { color: var(--danger); }
+  .metric.blue .metric-value { color: var(--accent); }
+
+  /* BADGES */
+  .badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 11px;
+    font-weight: 500;
+    padding: 2px 8px;
+    border-radius: 20px;
+  }
+  .badge-veeva { background: var(--veeva-bg); color: var(--veeva); }
+  .badge-iqvia { background: var(--iqvia-bg); color: var(--iqvia); }
+  .badge-pass { background: var(--success-bg); color: var(--success); }
+  .badge-fail { background: var(--danger-bg); color: var(--danger); }
+  .badge-warn { background: var(--warning-bg); color: var(--warning); }
+  .badge-pending { background: var(--surface2); color: var(--text3); border: 1px solid var(--border); }
+  .badge-europe { background: #e8eef9; color: #1a4fad; }
+  .badge-apac { background: #e8f4e6; color: #2d5a27; }
+  .badge-na { background: #fef3e2; color: #8a4f0a; }
+  .badge-latam { background: #fdeaea; color: #8b1d1d; }
+  .badge-mea { background: #f4eef9; color: #5a2d8a; }
+
+  /* BUTTONS */
+  btn { display: inline-flex; align-items: center; gap: 6px; }
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 7px 14px;
+    border-radius: var(--radius-sm);
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    border: 1px solid var(--border2);
+    background: var(--surface);
+    color: var(--text);
+    font-family: 'DM Sans', sans-serif;
+    transition: all 0.12s;
+    text-decoration: none;
+  }
+  .btn:hover { background: var(--surface2); }
+  .btn-primary { background: var(--accent); color: #fff; border-color: var(--accent); }
+  .btn-primary:hover { background: #1542a0; border-color: #1542a0; }
+  .btn-sm { padding: 4px 10px; font-size: 12px; }
+
+  /* FORM */
+  .form-section { margin-bottom: 24px; }
+  .form-section-title {
+    font-size: 12px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.07em;
+    color: var(--text3);
+    margin-bottom: 12px;
+    padding-bottom: 8px;
+    border-bottom: 1px solid var(--border);
+  }
+  .form-row { display: grid; gap: 14px; margin-bottom: 14px; }
+  .form-row.cols-2 { grid-template-columns: 1fr 1fr; }
+  .form-row.cols-3 { grid-template-columns: 1fr 1fr 1fr; }
+  .form-group label {
+    display: block;
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--text2);
+    margin-bottom: 5px;
+  }
+  .form-group label .req { color: var(--danger); }
+  input[type=text], input[type=number], input[type=datetime-local], input[type=url], select, textarea {
+    width: 100%;
+    padding: 7px 10px;
+    border: 1px solid var(--border2);
+    border-radius: var(--radius-sm);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 13px;
+    color: var(--text);
+    background: var(--surface);
+    outline: none;
+    transition: border-color 0.12s;
+    appearance: none;
+  }
+  input:focus, select:focus, textarea:focus { border-color: var(--accent); }
+  textarea { min-height: 80px; resize: vertical; }
+  .hint { font-size: 11px; color: var(--text3); margin-top: 3px; }
+
+  /* PLATFORM SELECTOR */
+  .platform-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .platform-card {
+    border: 2px solid var(--border);
+    border-radius: var(--radius);
+    padding: 14px 16px;
+    cursor: pointer;
+    transition: all 0.15s;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  .platform-card:hover { border-color: var(--border2); background: var(--surface2); }
+  .platform-card.selected-veeva { border-color: var(--veeva); background: var(--veeva-bg); }
+  .platform-card.selected-iqvia { border-color: var(--iqvia); background: var(--iqvia-bg); }
+  .platform-icon {
+    width: 36px;
+    height: 36px;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 15px;
+    font-weight: 700;
+    letter-spacing: -0.5px;
+  }
+  .platform-icon.veeva { background: var(--veeva); color: #fff; }
+  .platform-icon.iqvia { background: var(--iqvia); color: #fff; }
+  .platform-name { font-size: 13.5px; font-weight: 600; }
+  .platform-desc { font-size: 11px; color: var(--text3); }
+
+  /* TEST STEPS */
+  .test-steps { display: flex; flex-direction: column; gap: 10px; }
+  .test-step {
+    display: flex;
+    align-items: flex-start;
+    gap: 14px;
+    padding: 14px 16px;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    transition: all 0.15s;
+  }
+  .test-step.active { border-color: var(--accent); background: var(--accent-bg); }
+  .test-step.done { border-color: #b0d9c4; background: var(--success-bg); }
+  .step-num {
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    background: var(--border2);
+    color: var(--text2);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 11px;
+    font-weight: 600;
+    flex-shrink: 0;
+    margin-top: 1px;
+  }
+  .test-step.active .step-num { background: var(--accent); color: #fff; }
+  .test-step.done .step-num { background: var(--success); color: #fff; }
+  .step-title { font-size: 13px; font-weight: 500; }
+  .step-meta { font-size: 11px; color: var(--text3); margin-top: 2px; }
+
+  /* TIMER */
+  .timer-block {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 20px;
+    text-align: center;
+  }
+  .timer-display {
+    font-family: 'DM Mono', monospace;
+    font-size: 42px;
+    font-weight: 500;
+    color: var(--text);
+    letter-spacing: 0.02em;
+    line-height: 1;
+    margin: 8px 0;
+  }
+  .timer-label { font-size: 11px; color: var(--text3); text-transform: uppercase; letter-spacing: 0.07em; }
+  .timer-actions { display: flex; gap: 8px; justify-content: center; margin-top: 14px; }
+
+  /* RUNS TABLE */
+  .runs-table { width: 100%; border-collapse: collapse; font-size: 12.5px; }
+  .runs-table th {
+    text-align: left;
+    padding: 8px 12px;
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--text3);
+    border-bottom: 1px solid var(--border);
+    background: var(--surface2);
+  }
+  .runs-table td {
+    padding: 9px 12px;
+    border-bottom: 1px solid var(--border);
+    color: var(--text);
+    vertical-align: middle;
+  }
+  .runs-table tr:last-child td { border-bottom: none; }
+  .runs-table tr:hover td { background: var(--surface2); }
+  .mono { font-family: 'DM Mono', monospace; }
+
+  /* STATUS DOT */
+  .dot {
+    display: inline-block;
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    margin-right: 5px;
+    vertical-align: 1px;
+  }
+  .dot-green { background: var(--success); }
+  .dot-red { background: var(--danger); }
+  .dot-orange { background: var(--warning); }
+  .dot-gray { background: var(--text3); }
+
+  /* PROGRESS BAR */
+  .progress-wrap { background: var(--border); border-radius: 3px; height: 5px; }
+  .progress-bar { height: 5px; border-radius: 3px; background: var(--accent); transition: width 0.4s; }
+  .progress-bar.green { background: var(--success); }
+  .progress-bar.orange { background: #e08c30; }
+  .progress-bar.red { background: var(--danger); }
+
+  /* TABS */
+  .tab-bar {
+    display: flex;
+    border-bottom: 1px solid var(--border);
+    margin-bottom: 20px;
+    gap: 0;
+  }
+  .tab {
+    padding: 8px 18px;
+    font-size: 13px;
+    cursor: pointer;
+    border-bottom: 2px solid transparent;
+    color: var(--text2);
+    margin-bottom: -1px;
+    transition: all 0.12s;
+  }
+  .tab:hover { color: var(--text); }
+  .tab.active { color: var(--accent); border-bottom-color: var(--accent); font-weight: 500; }
+
+  /* REGION MAP PLACEHOLDER */
+  .region-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 8px; }
+  .region-card {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    padding: 12px;
+    text-align: center;
+  }
+  .region-name { font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 4px; }
+  .region-count { font-size: 22px; font-weight: 600; }
+  .region-status { font-size: 10px; color: var(--text3); margin-top: 2px; }
+
+  /* KPI STATUS */
+  .kpi-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px 0;
+    border-bottom: 1px solid var(--border);
+  }
+  .kpi-row:last-child { border-bottom: none; }
+
+  /* EVIDENCE UPLOAD */
+  .upload-zone {
+    border: 2px dashed var(--border2);
+    border-radius: var(--radius);
+    padding: 28px;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.15s;
+    color: var(--text3);
+  }
+  .upload-zone:hover { border-color: var(--accent); color: var(--accent); background: var(--accent-bg); }
+  .upload-icon { font-size: 28px; margin-bottom: 8px; }
+  .upload-text { font-size: 13px; font-weight: 500; }
+  .upload-hint { font-size: 11px; margin-top: 4px; }
+
+  /* SECTIONS */
+  .section-gap { margin-bottom: 20px; }
+
+  /* ALERT */
+  .alert {
+    padding: 10px 14px;
+    border-radius: var(--radius-sm);
+    font-size: 12.5px;
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+    margin-bottom: 16px;
+  }
+  .alert-info { background: var(--accent-bg); color: var(--accent); border: 1px solid #b8ceee; }
+  .alert-warn { background: var(--warning-bg); color: var(--warning); border: 1px solid #f0d090; }
+  .alert-success { background: var(--success-bg); color: var(--success); border: 1px solid #8ecbb0; }
+
+  /* SEPARATOR */
+  .sep { height: 1px; background: var(--border); margin: 20px 0; }
+
+  /* MODAL OVERLAY */
+  .modal-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.4);
+    z-index: 100;
+    align-items: center;
+    justify-content: center;
+  }
+  .modal-overlay.open { display: flex; }
+  .modal {
+    background: var(--surface);
+    border-radius: var(--radius);
+    padding: 24px;
+    width: 520px;
+    max-width: 95vw;
+    max-height: 90vh;
+    overflow-y: auto;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.18);
+  }
+  .modal-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 18px;
+  }
+  .modal-title { font-size: 15px; font-weight: 600; }
+  .modal-close { cursor: pointer; font-size: 18px; color: var(--text3); background: none; border: none; font-family: inherit; }
+  .modal-close:hover { color: var(--text); }
+
+  /* SUCCESS ANIMATION */
+  @keyframes checkIn { from { transform: scale(0); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+  .success-icon {
+    width: 48px; height: 48px; border-radius: 50%;
+    background: var(--success-bg); color: var(--success);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 22px; margin: 0 auto 12px;
+    animation: checkIn 0.3s ease;
+  }
+
+  /* PAGE VISIBILITY */
+  .page { display: none; }
+  .page.active { display: block; }
+
+  /* SCROLLBAR */
+  ::-webkit-scrollbar { width: 5px; height: 5px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 3px; }
+</style>
+</head>
+<body>
+<div class="app">
+
+  <!-- SIDEBAR -->
+  <nav class="sidebar">
+    <div class="sidebar-logo">
+      <div class="brand">QMA Performance Test</div>
+      <div class="sub">Global Quality Platform</div>
+      <div class="badge">⚡ ACTIVE TESTING</div>
+    </div>
+    <div class="nav-section">
+      <div class="nav-label">Overview</div>
+      <div class="nav-item active" onclick="showPage('dashboard')">
+        <span class="icon">📊</span> Dashboard
+      </div>
+      <div class="nav-item" onclick="showPage('execute')">
+        <span class="icon">▶</span> Execute Test
+      </div>
+    </div>
+    <div class="nav-section">
+      <div class="nav-label">Results</div>
+      <div class="nav-item" onclick="showPage('results')">
+        <span class="icon">📋</span> Test Results
+      </div>
+      <div class="nav-item" onclick="showPage('evidence')">
+        <span class="icon">📎</span> Evidence
+      </div>
+      <div class="nav-item" onclick="showPage('reports')">
+        <span class="icon">📈</span> Reports
+      </div>
+    </div>
+    <div class="nav-section">
+      <div class="nav-label">Administration</div>
+      <div class="nav-item" onclick="showPage('regions')">
+        <span class="icon">🌍</span> Regions
+      </div>
+      <div class="nav-item" onclick="showPage('kpi')">
+        <span class="icon">🎯</span> KPI Thresholds
+      </div>
+      <div class="nav-item" onclick="showPage('assets')">
+        <span class="icon">📁</span> Test Assets
+      </div>
+    </div>
+    <div class="sidebar-footer">
+      <div id="pa-status-chip" style="margin-bottom:10px;padding:6px 10px;border-radius:var(--radius-sm);font-size:11px;font-weight:500;display:flex;align-items:center;gap:6px;background:var(--danger-bg);color:var(--danger);border:1px solid #f0b8b8">
+        <span>●</span> <span id="pa-status-text">Power Automate: not configured</span>
+      </div>
+      <div class="user-chip">
+        <div class="user-avatar">AF</div>
+        <div>
+          <div class="user-name">Alberto Fumero</div>
+          <div class="user-role">IT Portfolio Manager · Europe</div>
+        </div>
+      </div>
+    </div>
+  </nav>
+
+  <!-- MAIN CONTENT -->
+  <main class="main">
+
+    <!-- ════════════════ DASHBOARD ════════════════ -->
+    <div id="page-dashboard" class="page active">
+      <div class="page-header">
+        <div>
+          <div class="page-title">Global Performance Dashboard</div>
+          <div class="page-subtitle">Veeva Vault vs IQVIA SmartSolve · Q3 2026 Test Cycle</div>
+        </div>
+        <div class="header-actions">
+          <button class="btn btn-sm" onclick="showPage('reports')">📈 Full Report</button>
+          <button class="btn btn-sm btn-primary" onclick="showPage('execute')">▶ New Test Run</button>
+        </div>
+      </div>
+      <div class="content">
+
+        <!-- KPI Summary -->
+        <div class="grid-4 section-gap">
+          <div class="metric blue">
+            <div class="metric-label">Total Test Runs</div>
+            <div class="metric-value" id="dash-total">0</div>
+            <div class="metric-sub">Across all regions</div>
+          </div>
+          <div class="metric green">
+            <div class="metric-label">Regions with Data</div>
+            <div class="metric-value" id="dash-regions">0/5</div>
+            <div class="metric-sub">Pending execution</div>
+          </div>
+          <div class="metric blue">
+            <div class="metric-label">Overall Pass Rate</div>
+            <div class="metric-value" id="dash-passrate">—</div>
+            <div class="metric-sub">Target ≥ 90%</div>
+          </div>
+          <div class="metric blue">
+            <div class="metric-label">Critical Failures</div>
+            <div class="metric-value" id="dash-failures">0</div>
+            <div class="metric-sub">100 MB threshold breaches</div>
+          </div>
+        </div>
+
+        <!-- Platform Comparison + Region Status -->
+        <div class="grid-2 section-gap">
+          <div class="card">
+            <div class="card-title"><span class="ct-icon">📊</span> Platform Performance (Avg Response Time)</div>
+            <div style="position:relative;height:220px">
+              <canvas id="chartPlatform" role="img" aria-label="Bar chart comparing Veeva Vault vs IQVIA SmartSolve average response times for 1MB, 10MB and 100MB files"></canvas>
+            </div>
+          </div>
+          <div class="card">
+            <div class="card-title"><span class="ct-icon">🌍</span> Regional Completion Status</div>
+            <div class="region-grid">
+              <div class="region-card" style="border-top:3px solid var(--accent);opacity:0.6">
+                <div class="region-name">Europe</div>
+                <div class="region-count" style="color:var(--text3)">⏳</div>
+                <div class="region-status">Pending</div>
+              </div>
+              <div class="region-card" style="border-top:3px solid #2d5a27;opacity:0.6">
+                <div class="region-name">APAC</div>
+                <div class="region-count" style="color:var(--text3)">⏳</div>
+                <div class="region-status">Pending</div>
+              </div>
+              <div class="region-card" style="border-top:3px solid #e08c30;opacity:0.6">
+                <div class="region-name">N. America</div>
+                <div class="region-count" style="color:var(--text3)">⏳</div>
+                <div class="region-status">Pending</div>
+              </div>
+              <div class="region-card" style="border-top:3px solid #8b1d1d;opacity:0.6">
+                <div class="region-name">LATAM</div>
+                <div class="region-count" style="color:var(--text3)">⏳</div>
+                <div class="region-status">Pending</div>
+              </div>
+              <div class="region-card" style="border-top:3px solid #5a2d8a;opacity:0.6">
+                <div class="region-name">MEA</div>
+                <div class="region-count" style="color:var(--text3)">⏳</div>
+                <div class="region-status">Pending</div>
+              </div>
+            </div>
+            <div class="sep"></div>
+            <div style="font-size:12px;color:var(--text3)">Overall: <strong style="color:var(--text)">0% complete</strong> · No tests submitted yet</div>
+          </div>
+        </div>
+
+        <!-- Detailed Results Chart + KPIs -->
+        <div class="grid-2 section-gap">
+          <div class="card">
+            <div class="card-title"><span class="ct-icon">📉</span> Response Time by File Size</div>
+            <div style="position:relative;height:220px">
+              <canvas id="chartTimeBySize" role="img" aria-label="Line chart showing upload and download response times for 1MB, 10MB and 100MB files across both platforms"></canvas>
+            </div>
+          </div>
+          <div class="card">
+            <div class="card-title"><span class="ct-icon">🎯</span> KPI Acceptance Status</div>
+            <div class="kpi-row">
+              <div>
+                <div style="font-size:12.5px;font-weight:500">1 MB Upload</div>
+                <div style="font-size:11px;color:var(--text3)">Target &lt;3s · Max 5s</div>
+              </div>
+              <div style="text-align:right">
+                <div class="badge badge-pending">⏳ PENDING</div>
+                <div style="font-size:11px;color:var(--text3);margin-top:3px">No data yet</div>
+              </div>
+            </div>
+            <div class="kpi-row">
+              <div>
+                <div style="font-size:12.5px;font-weight:500">1 MB Download</div>
+                <div style="font-size:11px;color:var(--text3)">Target &lt;3s · Max 5s</div>
+              </div>
+              <div style="text-align:right">
+                <div class="badge badge-pending">⏳ PENDING</div>
+                <div style="font-size:11px;color:var(--text3);margin-top:3px">No data yet</div>
+              </div>
+            </div>
+            <div class="kpi-row">
+              <div>
+                <div style="font-size:12.5px;font-weight:500">10 MB Upload</div>
+                <div style="font-size:11px;color:var(--text3)">Target &lt;10s · Max 20s</div>
+              </div>
+              <div style="text-align:right">
+                <div class="badge badge-pending">⏳ PENDING</div>
+                <div style="font-size:11px;color:var(--text3);margin-top:3px">No data yet</div>
+              </div>
+            </div>
+            <div class="kpi-row">
+              <div>
+                <div style="font-size:12.5px;font-weight:500">10 MB Download</div>
+                <div style="font-size:11px;color:var(--text3)">Target &lt;10s · Max 20s</div>
+              </div>
+              <div style="text-align:right">
+                <div class="badge badge-pending">⏳ PENDING</div>
+                <div style="font-size:11px;color:var(--text3);margin-top:3px">No data yet</div>
+              </div>
+            </div>
+            <div class="kpi-row">
+              <div>
+                <div style="font-size:12.5px;font-weight:500">100 MB Upload</div>
+                <div style="font-size:11px;color:var(--text3)">Target &lt;60s · Max 90s</div>
+              </div>
+              <div style="text-align:right">
+                <div class="badge badge-pending">⏳ PENDING</div>
+                <div style="font-size:11px;color:var(--text3);margin-top:3px">No data yet</div>
+              </div>
+            </div>
+            <div class="kpi-row">
+              <div>
+                <div style="font-size:12.5px;font-weight:500">100 MB Download</div>
+                <div style="font-size:11px;color:var(--text3)">Target &lt;60s · Max 90s</div>
+              </div>
+              <div style="text-align:right">
+                <div class="badge badge-pending">⏳ PENDING</div>
+                <div style="font-size:11px;color:var(--text3);margin-top:3px">No data yet</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Recent activity -->
+        <div class="card">
+          <div class="card-title"><span class="ct-icon">🕐</span> Recent Test Submissions</div>
+          <table class="runs-table">
+            <thead>
+              <tr>
+                <th>Date / Time (UTC)</th>
+                <th>Tester</th>
+                <th>Region</th>
+                <th>Platform</th>
+                <th>File Size</th>
+                <th>Upload (s)</th>
+                <th>Download (s)</th>
+                <th>Network</th>
+                <th>Status</th>
+              </tr>
+            </thead>
+            <tbody id="dashRecentBody">
+              <tr>
+                <td colspan="9" style="text-align:center;padding:28px;color:var(--text3);font-size:13px">
+                  No test results yet · <a href="#" onclick="showPage('execute');return false;" style="color:var(--accent)">Execute the first test</a>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- ════════════════ EXECUTE TEST ════════════════ -->
+    <div id="page-execute" class="page">
+      <div class="page-header">
+        <div>
+          <div class="page-title">Execute Performance Test</div>
+          <div class="page-subtitle">Follow the steps below · All fields marked <span style="color:var(--danger)">*</span> are mandatory</div>
+        </div>
+        <div class="header-actions">
+          <button class="btn btn-sm" id="btnSaveProgress">💾 Save Progress</button>
+          <button class="btn btn-sm btn-primary" id="btnSubmitTest" onclick="openSubmitModal()">✓ Submit Results</button>
+        </div>
+      </div>
+      <div class="content">
+
+        <div class="grid-2" style="gap:20px;align-items:start">
+
+          <!-- LEFT: Test Form -->
+          <div>
+            <!-- Step 1: Identity -->
+            <div class="card section-gap">
+              <div class="card-title">
+                <span style="background:var(--accent);color:#fff;width:20px;height:20px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;font-size:10px;font-weight:700">1</span>
+                Tester Identity
+              </div>
+              <div class="form-section">
+                <div class="form-row cols-2">
+                  <div class="form-group">
+                    <label>Full Name <span class="req">*</span></label>
+                    <input type="text" id="f_name" placeholder="e.g. Alberto Fumero">
+                  </div>
+                  <div class="form-group">
+                    <label>Email <span class="req">*</span></label>
+                    <input type="text" id="f_email" placeholder="alberto.fumero@fresenius-kabi.com">
+                  </div>
+                </div>
+                <div class="form-row cols-3">
+                  <div class="form-group">
+                    <label>Region <span class="req">*</span></label>
+                    <select id="f_region">
+                      <option value="">Select region…</option>
+                      <option>Europe</option>
+                      <option>North America</option>
+                      <option>LATAM</option>
+                      <option>APAC</option>
+                      <option>Middle East / Africa</option>
+                    </select>
+                  </div>
+                  <div class="form-group">
+                    <label>Country <span class="req">*</span></label>
+                    <select id="f_country">
+                      <option value="">Select country…</option>
+                      <option>Germany</option>
+                      <option>Spain</option>
+                      <option>United States</option>
+                      <option>Mexico</option>
+                      <option>Dominican Republic</option>
+                      <option>China</option>
+                      <option>India</option>
+                      </select>
+                  </div>
+                  <div class="form-group">
+                    <label>Network Type <span class="req">*</span></label>
+                    <select id="f_network">
+                      <option value="">Select…</option>
+                      <option>Corporate LAN</option>
+                      <option>Corporate WiFi</option>
+                      <option>VPN</option>
+                    </select>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Step 2: Platform -->
+            <div class="card section-gap">
+              <div class="card-title">
+                <span style="background:var(--accent);color:#fff;width:20px;height:20px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;font-size:10px;font-weight:700">2</span>
+                Platform Under Test
+              </div>
+              <div class="platform-grid" style="margin-bottom:14px">
+                <div class="platform-card" id="card-veeva" onclick="selectPlatform('veeva')">
+                  <div class="platform-icon veeva">VV</div>
+                  <div>
+                    <div class="platform-name">Veeva Vault</div>
+                    <div class="platform-desc">QMS Sandbox</div>
+                  </div>
+                </div>
+                <div class="platform-card" id="card-iqvia" onclick="selectPlatform('iqvia')">
+                  <div class="platform-icon iqvia">IQ</div>
+                  <div>
+                    <div class="platform-name">IQVIA SmartSolve</div>
+                    <div class="platform-desc">QMS Sandbox</div>
+                  </div>
+                </div>
+              </div>
+              <div class="form-row cols-2">
+                <div class="form-group">
+                  <label>Environment URL <span class="req">*</span></label>
+                  <input type="url" id="f_url" placeholder="https://sandbox.veevavault.com">
+                </div>
+                <div class="form-group">
+                  <label>Test Date/Time (UTC) <span class="req">*</span></label>
+                  <input type="datetime-local" id="f_datetime">
+                </div>
+              </div>
+            </div>
+
+            <!-- Step 3: File Size -->
+            <div class="card section-gap">
+              <div class="card-title">
+                <span style="background:var(--accent);color:#fff;width:20px;height:20px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;font-size:10px;font-weight:700">3</span>
+                File Size Under Test
+              </div>
+              <div style="display:flex;gap:10px">
+                <div style="flex:1;padding:12px 14px;border:2px solid var(--border);border-radius:var(--radius-sm);cursor:pointer;text-align:center;transition:all 0.12s" id="fs-1" onclick="selectFileSize('1')">
+                  <div style="font-size:18px;font-weight:600">1 MB</div>
+                  <div style="font-size:11px;color:var(--text3)">Typical complaint record</div>
+                </div>
+                <div style="flex:1;padding:12px 14px;border:2px solid var(--border);border-radius:var(--radius-sm);cursor:pointer;text-align:center;transition:all 0.12s" id="fs-10" onclick="selectFileSize('10')">
+                  <div style="font-size:18px;font-weight:600">10 MB</div>
+                  <div style="font-size:11px;color:var(--text3)">Document with attachments</div>
+                </div>
+                <div style="flex:1;padding:12px 14px;border:2px solid var(--border);border-radius:var(--radius-sm);cursor:pointer;text-align:center;transition:all 0.12s" id="fs-100" onclick="selectFileSize('100')">
+                  <div style="font-size:18px;font-weight:600">100 MB</div>
+                  <div style="font-size:11px;color:var(--text3)">Batch migration file</div>
+                </div>
+              </div>
+              <div id="kpi-hint" class="alert alert-info" style="margin-top:12px;display:none">
+                <span>ℹ</span> <span id="kpi-hint-text"></span>
+              </div>
+            </div>
+
+          </div>
+
+          <!-- RIGHT: Timer + Results Entry -->
+          <div>
+
+            <!-- Timer -->
+            <div class="card section-gap">
+              <div class="card-title">
+                <span style="background:var(--accent);color:#fff;width:20px;height:20px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;font-size:10px;font-weight:700">4</span>
+                Built-in Stopwatch
+              </div>
+              <div class="timer-block">
+                <div class="timer-label">ELAPSED TIME</div>
+                <div class="timer-display" id="timerDisplay">00:00.00</div>
+                <div style="font-size:11px;color:var(--text3)" id="timerStatus">Ready — press Start when transfer begins</div>
+                <div class="timer-actions">
+                  <button class="btn btn-primary" id="btnStart" onclick="timerStart()">▶ Start</button>
+                  <button class="btn" id="btnStop" onclick="timerStop()" disabled>⏹ Stop</button>
+                  <button class="btn" onclick="timerReset()">↺ Reset</button>
+                  <button class="btn btn-sm" onclick="captureTime()">📋 Capture</button>
+                </div>
+              </div>
+            </div>
+
+            <!-- Manual Result Entry -->
+            <div class="card section-gap">
+              <div class="card-title">
+                <span style="background:var(--accent);color:#fff;width:20px;height:20px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;font-size:10px;font-weight:700">5</span>
+                Record Results (3 Runs Each)
+              </div>
+              <div class="alert alert-info"><span>ℹ</span> Execute each test 3 times. Averages are computed automatically.</div>
+
+              <!-- Upload runs -->
+              <div style="margin-bottom:14px">
+                <div style="font-size:12px;font-weight:600;color:var(--text2);margin-bottom:8px;text-transform:uppercase;letter-spacing:0.05em">📤 Upload Runs</div>
+                <div style="display:grid;grid-template-columns:1fr 1fr 1fr 80px;gap:8px;align-items:end">
+                  <div class="form-group" style="margin:0">
+                    <label>Run 1 (s)</label>
+                    <input type="number" id="u1" step="0.01" min="0" placeholder="e.g. 2.14" onchange="calcAvg()">
+                  </div>
+                  <div class="form-group" style="margin:0">
+                    <label>Run 2 (s)</label>
+                    <input type="number" id="u2" step="0.01" min="0" placeholder="e.g. 2.08" onchange="calcAvg()">
+                  </div>
+                  <div class="form-group" style="margin:0">
+                    <label>Run 3 (s)</label>
+                    <input type="number" id="u3" step="0.01" min="0" placeholder="e.g. 2.22" onchange="calcAvg()">
+                  </div>
+                  <div class="form-group" style="margin:0">
+                    <label style="color:var(--accent)">Avg (s)</label>
+                    <input type="text" id="uavg" readonly style="background:var(--accent-bg);color:var(--accent);font-weight:600;border-color:transparent" placeholder="—">
+                  </div>
+                </div>
+              </div>
+
+              <!-- Download runs -->
+              <div style="margin-bottom:14px">
+                <div style="font-size:12px;font-weight:600;color:var(--text2);margin-bottom:8px;text-transform:uppercase;letter-spacing:0.05em">📥 Download Runs</div>
+                <div style="display:grid;grid-template-columns:1fr 1fr 1fr 80px;gap:8px;align-items:end">
+                  <div class="form-group" style="margin:0">
+                    <label>Run 1 (s)</label>
+                    <input type="number" id="d1" step="0.01" min="0" placeholder="e.g. 1.90" onchange="calcAvg()">
+                  </div>
+                  <div class="form-group" style="margin:0">
+                    <label>Run 2 (s)</label>
+                    <input type="number" id="d2" step="0.01" min="0" placeholder="e.g. 1.85" onchange="calcAvg()">
+                  </div>
+                  <div class="form-group" style="margin:0">
+                    <label>Run 3 (s)</label>
+                    <input type="number" id="d3" step="0.01" min="0" placeholder="e.g. 1.78" onchange="calcAvg()">
+                  </div>
+                  <div class="form-group" style="margin:0">
+                    <label style="color:var(--accent)">Avg (s)</label>
+                    <input type="text" id="davg" readonly style="background:var(--accent-bg);color:var(--accent);font-weight:600;border-color:transparent" placeholder="—">
+                  </div>
+                </div>
+              </div>
+
+              <!-- KPI Status Live Preview -->
+              <div id="kpiLiveBox" style="display:none;padding:10px 12px;border-radius:var(--radius-sm);border:1px solid var(--border);background:var(--surface2);margin-top:4px">
+                <div style="font-size:11px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:0.06em;margin-bottom:6px">Live KPI Evaluation</div>
+                <div style="display:flex;gap:16px">
+                  <div>
+                    <span style="font-size:11px;color:var(--text3)">Upload avg:</span>
+                    <strong id="kpiUploadStatus" style="font-size:12px;margin-left:4px"></strong>
+                  </div>
+                  <div>
+                    <span style="font-size:11px;color:var(--text3)">Download avg:</span>
+                    <strong id="kpiDownloadStatus" style="font-size:12px;margin-left:4px"></strong>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Errors & Notes -->
+            <div class="card">
+              <div class="card-title">
+                <span style="background:var(--accent);color:#fff;width:20px;height:20px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;font-size:10px;font-weight:700">6</span>
+                Errors, Observations & Evidence
+              </div>
+              <div class="form-group" style="margin-bottom:12px">
+                <label>Errors / Timeouts Encountered</label>
+                <textarea id="f_errors" placeholder="Describe any connection errors, timeout messages, or unexpected behaviour…"></textarea>
+              </div>
+              <div class="form-group" style="margin-bottom:12px">
+                <label>General Observations</label>
+                <textarea id="f_notes" placeholder="Network quality, platform responsiveness, visible latency, unusual behaviour…" style="min-height:60px"></textarea>
+              </div>
+              <div class="upload-zone" onclick="alert('In production: Opens OneDrive/SharePoint file picker for screenshots & evidence upload.')">
+                <div class="upload-icon">📸</div>
+                <div class="upload-text">Upload Screenshots & Evidence</div>
+                <div class="upload-hint">PNG · PDF · Excel · CSV · Max 50 MB · Stored in SharePoint: Region / Platform / Date / User</div>
+              </div>
+            </div>
+
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ════════════════ RESULTS ════════════════ -->
+    <div id="page-results" class="page">
+      <div class="page-header">
+        <div>
+          <div class="page-title">Test Results Log</div>
+          <div class="page-subtitle">Complete audit trail · GxP ALCOA+ compliant</div>
+        </div>
+        <div class="header-actions">
+          <select class="btn btn-sm" style="padding:5px 10px;font-size:12px">
+            <option>All Regions</option>
+            <option>Europe</option>
+            <option>APAC</option>
+            <option>North America</option>
+          </select>
+          <select class="btn btn-sm" style="padding:5px 10px;font-size:12px">
+            <option>All Platforms</option>
+            <option>Veeva Vault</option>
+            <option>IQVIA SmartSolve</option>
+          </select>
+          <button class="btn btn-sm btn-primary" onclick="exportResultsCSV()">⬇ Export Excel</button>
+        </div>
+      </div>
+      <div class="content">
+        <div class="card">
+          <table class="runs-table">
+            <thead>
+              <tr>
+                <th>#</th>
+                <th>Submitted (UTC)</th>
+                <th>Tester</th>
+                <th>Region / Country</th>
+                <th>Platform</th>
+                <th>File</th>
+                <th>Upload Avg (s)</th>
+                <th>Download Avg (s)</th>
+                <th>Network</th>
+                <th>Errors?</th>
+                <th>Status</th>
+              </tr>
+            </thead>
+            <tbody id="resultsTableBody">
+              <!-- Populated by JS -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- ════════════════ EVIDENCE ════════════════ -->
+    <div id="page-evidence" class="page">
+      <div class="page-header">
+        <div>
+          <div class="page-title">Evidence Repository</div>
+          <div class="page-subtitle">Screenshots, logs & files · SharePoint document library</div>
+        </div>
+        <div class="header-actions">
+          <button class="btn btn-sm btn-primary" onclick="alert('Opens SharePoint document library folder picker.')">+ Upload Evidence</button>
+        </div>
+      </div>
+      <div class="content">
+        <div class="alert alert-info"><span>ℹ</span> Evidence is automatically organised in SharePoint by <strong>Region / Platform / Date / Tester</strong>. All files are immutable once uploaded and carry an automatic timestamp for GxP audit trail.</div>
+        <div class="grid-2">
+          <div class="card">
+            <div class="card-title">📁 Folder Structure</div>
+            <div style="font-family:'DM Mono',monospace;font-size:12px;line-height:2;color:var(--text2)">
+              📁 QMA_PerfTest_2026/<br>
+              &nbsp;&nbsp;📁 Europe/<br>
+              &nbsp;&nbsp;&nbsp;&nbsp;📁 Veeva/ <span style="color:var(--text3)">(empty)</span><br>
+              &nbsp;&nbsp;&nbsp;&nbsp;📁 IQVIA/ <span style="color:var(--text3)">(empty)</span><br>
+              &nbsp;&nbsp;📁 APAC/<br>
+              &nbsp;&nbsp;&nbsp;&nbsp;📁 Veeva/ <span style="color:var(--text3)">(empty)</span><br>
+              &nbsp;&nbsp;&nbsp;&nbsp;📁 IQVIA/ <span style="color:var(--text3)">(empty)</span><br>
+              &nbsp;&nbsp;📁 North_America/<br>
+              &nbsp;&nbsp;&nbsp;&nbsp;📁 Veeva/ <span style="color:var(--text3)">(empty)</span><br>
+              &nbsp;&nbsp;&nbsp;&nbsp;📁 IQVIA/ <span style="color:var(--text3)">(empty)</span><br>
+              &nbsp;&nbsp;📁 LATAM/ <span style="color:var(--text3)">(pending)</span><br>
+              &nbsp;&nbsp;📁 MEA/ <span style="color:var(--text3)">(pending)</span>
+            </div>
+          </div>
+          <div class="card">
+            <div class="card-title">📎 Recent Evidence Files</div>
+            <div style="text-align:center;padding:32px 20px;color:var(--text3)">
+              <div style="font-size:28px;margin-bottom:8px">📭</div>
+              <div style="font-size:13px;font-weight:500;color:var(--text2);margin-bottom:4px">No evidence uploaded yet</div>
+              <div style="font-size:11px">Files will appear here after testers upload screenshots and logs during test execution.</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ════════════════ REPORTS ════════════════ -->
+    <div id="page-reports" class="page">
+      <div class="page-header">
+        <div>
+          <div class="page-title">Performance Reports</div>
+          <div class="page-subtitle">Consolidated analysis · Veeva Vault vs IQVIA SmartSolve</div>
+        </div>
+        <div class="header-actions">
+          <button class="btn btn-sm" onclick="alert('Generating PDF executive summary…')">📄 Export PDF</button>
+          <button class="btn btn-sm" onclick="alert('Exporting to Excel workbook…')">📊 Export Excel</button>
+          <button class="btn btn-sm btn-primary" onclick="alert('Generating PowerPoint executive deck…')">📊 Export PPT</button>
+        </div>
+      </div>
+      <div class="content">
+
+        <div class="tab-bar">
+          <div class="tab active" onclick="showTab('tab-overview')">Overview</div>
+          <div class="tab" onclick="showTab('tab-regional')">Regional Analysis</div>
+          <div class="tab" onclick="showTab('tab-platform')">Platform Comparison</div>
+          <div class="tab" onclick="showTab('tab-ai')">Summary</div>
+        </div>
+
+        <!-- Overview Tab -->
+        <div id="tab-overview" class="tab-content">
+          <div class="grid-4 section-gap">
+            <div class="metric blue"><div class="metric-label">Tests Completed</div><div class="metric-value">0</div></div>
+            <div class="metric blue"><div class="metric-label">Pass Rate</div><div class="metric-value">—</div></div>
+            <div class="metric blue"><div class="metric-label">Marginal Rate</div><div class="metric-value">—</div></div>
+            <div class="metric blue"><div class="metric-label">Fail Rate</div><div class="metric-value">—</div></div>
+          </div>
+          <div class="grid-2">
+            <div class="card">
+              <div class="card-title">Regional Average Upload Time (all file sizes)</div>
+              <div style="position:relative;height:240px">
+                <canvas id="chartRegional" role="img" aria-label="Bar chart of average upload times by region and platform"></canvas>
+              </div>
+            </div>
+            <div class="card">
+              <div class="card-title">Pass / Marginal / Fail Distribution</div>
+              <div style="position:relative;height:240px">
+                <canvas id="chartStatus" role="img" aria-label="Donut chart showing pass marginal fail distribution"></canvas>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Regional tab (hidden by default) -->
+        <div id="tab-regional" class="tab-content" style="display:none">
+          <div class="card">
+            <div class="card-title">Regional Performance Breakdown</div>
+            <table class="runs-table">
+              <thead><tr><th>Region</th><th>Testers</th><th>Total Runs</th><th>Avg Upload (s)</th><th>Avg Download (s)</th><th>Best Platform</th><th>Issues</th><th>Status</th></tr></thead>
+              <tbody>
+                <tr><td><span class="badge badge-europe">Europe</span></td><td>—</td><td>0</td><td>—</td><td>—</td><td>—</td><td>—</td><td><span class="dot dot-gray"></span>Pending</td></tr>
+                <tr><td><span class="badge badge-apac">APAC</span></td><td>—</td><td>0</td><td>—</td><td>—</td><td>—</td><td>—</td><td><span class="dot dot-gray"></span>Pending</td></tr>
+                <tr><td><span class="badge badge-na">N. America</span></td><td>—</td><td>0</td><td>—</td><td>—</td><td>—</td><td>—</td><td><span class="dot dot-gray"></span>Pending</td></tr>
+                <tr><td><span class="badge badge-latam">LATAM</span></td><td>—</td><td>0</td><td>—</td><td>—</td><td>—</td><td>—</td><td><span class="dot dot-gray"></span>Pending</td></tr>
+                <tr><td><span class="badge badge-mea">MEA</span></td><td>—</td><td>0</td><td>—</td><td>—</td><td>—</td><td>—</td><td><span class="dot dot-gray"></span>Pending</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Platform tab (hidden) -->
+        <div id="tab-platform" class="tab-content" style="display:none">
+          <div class="grid-2">
+            <div class="card" style="border-left:4px solid var(--veeva)">
+              <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px">
+                <div class="platform-icon veeva">VV</div>
+                <div><div style="font-size:15px;font-weight:600">Veeva Vault</div><div style="font-size:11px;color:var(--text3)">Global QMS Candidate</div></div>
+                <span class="badge badge-pending" style="margin-left:auto">Pending data</span>
+              </div>
+              <div class="kpi-row"><span style="font-size:12.5px">1 MB Upload avg</span><strong class="mono" style="color:var(--text3)">—</strong></div>
+              <div class="kpi-row"><span style="font-size:12.5px">10 MB Upload avg</span><strong class="mono" style="color:var(--text3)">—</strong></div>
+              <div class="kpi-row"><span style="font-size:12.5px">100 MB Upload avg</span><strong class="mono" style="color:var(--text3)">—</strong></div>
+              <div class="kpi-row"><span style="font-size:12.5px">Overall pass rate</span><strong style="color:var(--text3)">—</strong></div>
+              <div class="kpi-row"><span style="font-size:12.5px">Critical failures</span><strong style="color:var(--text3)">—</strong></div>
+            </div>
+            <div class="card" style="border-left:4px solid var(--iqvia)">
+              <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px">
+                <div class="platform-icon iqvia">IQ</div>
+                <div><div style="font-size:15px;font-weight:600">IQVIA SmartSolve</div><div style="font-size:11px;color:var(--text3)">Global QMS Candidate</div></div>
+                <span class="badge badge-pending" style="margin-left:auto">Pending data</span>
+              </div>
+              <div class="kpi-row"><span style="font-size:12.5px">1 MB Upload avg</span><strong class="mono" style="color:var(--text3)">—</strong></div>
+              <div class="kpi-row"><span style="font-size:12.5px">10 MB Upload avg</span><strong class="mono" style="color:var(--text3)">—</strong></div>
+              <div class="kpi-row"><span style="font-size:12.5px">100 MB Upload avg</span><strong class="mono" style="color:var(--text3)">—</strong></div>
+              <div class="kpi-row"><span style="font-size:12.5px">Overall pass rate</span><strong style="color:var(--text3)">—</strong></div>
+              <div class="kpi-row"><span style="font-size:12.5px">Critical failures</span><strong style="color:var(--text3)">—</strong></div>
+            </div>
+          </div>
+          <div class="alert alert-info" style="margin-top:16px"><span>ℹ</span> Platform comparison will populate automatically as regional testers submit results. A minimum of 3 runs per platform is recommended before drawing conclusions.</div>
+        </div>
+
+        <!-- Summary tab (hidden) -->
+        <div id="tab-ai" class="tab-content" style="display:none">
+          <div class="card">
+            <div class="card-title">🤖 Performance Analysis</div>
+            <div class="alert alert-info" style="margin-bottom:16px"><span>ℹ</span> The summary is generated automatically from submitted test data. Click Generate once results are available.</div>
+            <div style="text-align:center;padding:32px 20px;color:var(--text3)">
+              <div style="font-size:32px;margin-bottom:10px">📭</div>
+              <div style="font-size:13.5px;font-weight:500;color:var(--text2);margin-bottom:6px">No data to analyse yet</div>
+              <div style="font-size:12px">Submit test results from at least one region to generate a performance summary.</div>
+            </div>
+            <div style="display:flex;gap:8px;margin-top:8px">
+              <button class="btn btn-sm btn-primary" onclick="alert('Generate summary from test data…')">🔄 Generate Summary</button>
+              <button class="btn btn-sm" onclick="alert('summary required before drafting email. Run Generate first.')">✉ Draft Stakeholder Email</button>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- ════════════════ REGIONS ════════════════ -->
+    <div id="page-regions" class="page">
+      <div class="page-header">
+        <div><div class="page-title">Global Regions & Coordinators</div><div class="page-subtitle">5 regions · 8 countries in scope</div></div>
+        <div class="header-actions"><button class="btn btn-sm btn-primary" onclick="alert('Add/edit region configuration…')">+ Add Region</button></div>
+      </div>
+      <div class="content">
+        <div class="card">
+          <table class="runs-table">
+            <thead><tr><th>Region</th><th>Country</th><th>Site / Facility</th><th>Coordinator</th><th>Email</th><th>Confirmed</th><th>Notes</th></tr></thead>
+            <tbody>
+              <tr><td><span class="badge badge-europe">Europe</span></td><td>Germany</td><td>Bad Homburg</td><td>Alberto Fumero</td><td>alberto.fumero@fresenius-kabi.com</td><td><span class="badge badge-pass">Y</span></td><td></td></tr>
+              <tr><td><span class="badge badge-europe">Europe</span></td><td>Spain</td><td>Barcelona</td><td>Alberto Fumero</td><td>alberto.fumero@fresenius-kabi.com</td><td><span class="badge badge-pass">Y</span></td><td>Pilot site – priority</td></tr>
+              <tr><td><span class="badge badge-apac">APAC</span></td><td>China</td><td>Shanghai</td><td>Alberto Fumeron</td><td>alberto.fumero@fresenius-kabi.com</td><td><span class="badge badge-pass">Y</span></td><td></td></tr>
+              <tr><td><span class="badge badge-apac">APAC</span></td><td>India</td><td></td><td>TBD</td><td></td><td><span class="badge badge-pending">Pending</span></td><td></td></tr>
+              <tr><td><span class="badge badge-na">N. America</span></td><td>United States</td><td>New Jersey</td><td>Alberto Fumero</td><td>alberto.fumero@fresenius-kabi.com</td><td><span class="badge badge-pass">Y</span></td><td></td></tr>
+              <tr><td><span class="badge badge-latam">LATAM</span></td><td>Dominican Republic</td><td></td><td>TBD</td><td></td><td><span class="badge badge-pending">Pending</span></td><td></td></tr>
+              <tr><td><span class="badge badge-latam">LATAM</span></td><td>Mexico</td><td></td><td>TBD</td><td></td><td><span class="badge badge-pending">Pending</span></td><td></td></tr>
+              <tr><td><span class="badge badge-mea">MEA</span></td><td>UAE</td><td></td><td>TBD</td><td></td><td><span class="badge badge-pending">Pending</span></td><td></td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- ════════════════ KPI ════════════════ -->
+    <div id="page-kpi" class="page">
+      <div class="page-header">
+        <div><div class="page-title">KPI Acceptance Thresholds</div><div class="page-subtitle">Per approved test protocol · GxP controlled document</div></div>
+      </div>
+      <div class="content">
+        <div class="alert alert-warn"><span>⚠</span> Thresholds are locked post-approval. Any modification requires  IT Manager sign-off and a new document version.</div>
+        <div class="card">
+          <table class="runs-table">
+            <thead><tr><th>File Size</th><th>Operation</th><th>Target (s)</th><th>Acceptable Max (s)</th><th>Failure Threshold (s)</th><th>Consequence</th></tr></thead>
+            <tbody>
+              <tr><td><strong>1 MB</strong></td><td>Upload</td><td class="mono" style="color:var(--success)">&lt; 3</td><td class="mono">3 – 5</td><td class="mono" style="color:var(--danger)">≥ 5</td><td>Re-test Attempt 1 → Vendor escalation</td></tr>
+              <tr><td><strong>1 MB</strong></td><td>Download</td><td class="mono" style="color:var(--success)">&lt; 3</td><td class="mono">3 – 5</td><td class="mono" style="color:var(--danger)">≥ 5</td><td>Re-test Attempt 1 → Vendor escalation</td></tr>
+              <tr><td><strong>10 MB</strong></td><td>Upload</td><td class="mono" style="color:var(--success)">&lt; 10</td><td class="mono">10 – 20</td><td class="mono" style="color:var(--danger)">≥ 20</td><td>Re-test Attempt 1 → Vendor escalation</td></tr>
+              <tr><td><strong>10 MB</strong></td><td>Download</td><td class="mono" style="color:var(--success)">&lt; 10</td><td class="mono">10 – 20</td><td class="mono" style="color:var(--danger)">≥ 20</td><td>Re-test Attempt 1 → Vendor escalation</td></tr>
+              <tr><td><strong>100 MB</strong></td><td>Upload</td><td class="mono" style="color:var(--success)">&lt; 60</td><td class="mono">60 – 90</td><td class="mono" style="color:var(--danger)">≥ 90</td><td>Re-test Attempt 1 → If Attempt 2 fails → <strong>Contract Exit Clause</strong></td></tr>
+              <tr><td><strong>100 MB</strong></td><td>Download</td><td class="mono" style="color:var(--success)">&lt; 60</td><td class="mono">60 – 90</td><td class="mono" style="color:var(--danger)">≥ 90</td><td>Re-test Attempt 1 → If Attempt 2 fails → <strong>Contract Exit Clause</strong></td></tr>
+            </tbody>
+          </table>
+          <div class="sep"></div>
+          <div style="font-size:12px;color:var(--text3);line-height:1.7">
+            <strong style="color:var(--text)">Scale context:</strong> Platform must support 125,000 complaints/year · 5,000+ concurrent users · 24×7 global availability · GxP-compliant (21 CFR Part 11, EU Annex 11, GDPR).<br>
+            Test multiplier: 100 test users = 1,000 real concurrent users (1:10 ratio).
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ════════════════ TEST ASSETS ════════════════ -->
+    <div id="page-assets" class="page">
+      <div class="page-header">
+        <div><div class="page-title">Test Assets & Documentation</div><div class="page-subtitle">Controlled test files · Instructions · SOPs</div></div>
+      </div>
+      <div class="content">
+
+          <div class="card" style="cursor:pointer" onclick="alert('Opens OneDrive to download test files.')">
+            <div style="font-size:28px;margin-bottom:8px">📦</div>
+            <div style="font-weight:600;font-size:13.5px;margin-bottom:4px">Test File Package</div>
+            <div style="font-size:11px;color:var(--text3);margin-bottom:12px">3 standardised test files: 1 MB · 10 MB · 100 MB<br>With SHA-256 checksums</div>
+            <button class="btn btn-sm btn-primary">⬇ Download</button>
+          </div>
+          <div class="card" style="cursor:pointer" onclick="alert('Opens test execution instructions PDF.')">
+            <div style="font-size:28px;margin-bottom:8px">📋</div>
+            <div style="font-weight:600;font-size:13.5px;margin-bottom:4px">Test Execution SOP</div>
+            <div style="font-size:11px;color:var(--text3);margin-bottom:12px">Step-by-step procedure for regional coordinators<br>v2.1 · Approved 2026-20-05</div>
+            <button class="btn btn-sm">📄 View PDF</button>
+          </div>
+          <div class="card" style="cursor:pointer" onclick="alert('Opens data collection Excel template.')">
+            <div style="font-size:28px;margin-bottom:8px">📊</div>
+            <div style="font-weight:600;font-size:13.5px;margin-bottom:4px">Data Collection Template</div>
+            <div style="font-size:11px;color:var(--text3);margin-bottom:12px">Excel template with all required fields<br>Pre-formatted for SharePoint upload</div>
+            <button class="btn btn-sm">⬇ Download</button>
+          </div>
+          <div class="card" style="cursor:pointer" onclick="alert('Opens test charter document.')">
+            <div style="font-size:28px;margin-bottom:8px">📜</div>
+            <div style="font-weight:600;font-size:13.5px;margin-bottom:4px">Test Charter</div>
+            <div style="font-size:11px;color:var(--text3);margin-bottom:12px">Approved objectives, scope, and acceptance criteria<br>Signed: QA + IT + Vendors</div>
+            <button class="btn btn-sm">📄 View</button>
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+  </main>
+</div>
+
+<!-- SUBMIT MODAL -->
+<div class="modal-overlay" id="submitModal">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title">Submit Test Results</div>
+      <button class="modal-close" onclick="closeModal()">✕</button>
+    </div>
+    <div id="modalBody">
+      <div style="background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius-sm);padding:14px;margin-bottom:16px;font-size:12.5px;line-height:1.7">
+        <strong>Summary of this submission:</strong><br>
+        <span id="submitSummary"></span>
+      </div>
+      <div class="alert alert-info"><span>ℹ</span> Submitting records this entry permanently in the audit trail. Results cannot be deleted — only annotated.</div>
+      <div style="display:flex;gap:8px;margin-top:16px">
+        <button class="btn btn-primary" style="flex:1" onclick="confirmSubmit()">✓ Confirm & Submit</button>
+        <button class="btn" onclick="closeModal()">Cancel</button>
+      </div>
+    </div>
+    <div id="modalSuccess" style="display:none;text-align:center;padding:10px 0">
+      <div class="success-icon">✓</div>
+      <div style="font-size:15px;font-weight:600;margin-bottom:6px">Results Submitted</div>
+      <div style="font-size:12.5px;color:var(--text3);margin-bottom:16px">Saved to SharePoint · Audit trail updated · Evidence folder created</div>
+      <button class="btn btn-primary" onclick="closeModal();showPage('results')">View in Results Log</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ═══════════════════════════════════════════════════════════════════════════
+// JSONBIN.IO CONFIGURATION
+// ─────────────────────────────────────────────────────────────────────────
+// See setup guide for full instructions.
+// ═══════════════════════════════════════════════════════════════════════════
+const JSONBIN_API_KEY  = '$2a$10$VzjSSwJGVo22fqzr1jBwE.4ka2B4Jscw/JkE1TorGCUqXvvb652u';
+const JSONBIN_BIN_ID   = '6a0d5a48ee5a733b12eb624f';
+const JSONBIN_BASE_URL = 'https://api.jsonbin.io/v3/b';
+
+// ── STATE ──────────────────────────────────────────────────────────────────
+let selectedPlatform = null;
+let selectedFileSize = null;
+let timerInterval = null;
+let timerRunning = false;
+let timerMs = 0;
+let timerStartMs = 0;
+let isSubmitting = false;
+
+const KPI = {
+  '1':   { upload: 3, warn: 5, download: 3, warnD: 5 },
+  '10':  { upload: 10, warn: 20, download: 10, warnD: 20 },
+  '100': { upload: 60, warn: 90, download: 60, warnD: 90 }
+};
+
+const RESULTS_DB = [];
+
+// ── NAVIGATION ─────────────────────────────────────────────────────────────
+function showPage(id) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.getElementById('page-' + id).classList.add('active');
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n => {
+    if (n.getAttribute('onclick') && n.getAttribute('onclick').includes("'" + id + "'")) n.classList.add('active');
+  });
+  if (id === 'results') buildResultsTable();
+}
+
+function showTab(id) {
+  document.querySelectorAll('.tab-content').forEach(t => t.style.display = 'none');
+  document.getElementById(id).style.display = 'block';
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  event.target.classList.add('active');
+}
+
+// ── RESULTS TABLE ──────────────────────────────────────────────────────────
+function buildResultsTable() {
+  const tb = document.getElementById('resultsTableBody');
+  tb.innerHTML = RESULTS_DB.map((r, i) => `
+    <tr>
+      <td class="mono" style="font-size:11px">${i+1}</td>
+      <td class="mono" style="font-size:11px">${r.date}</td>
+      <td>${r.tester}</td>
+      <td><span class="badge ${regionBadge(r.region)}">${r.region}</span><br><span style="font-size:10.5px;color:var(--text3)">${r.country}</span></td>
+      <td><span class="badge ${r.platform==='Veeva'?'badge-veeva':'badge-iqvia'}">${r.platform}</span></td>
+      <td>${r.size}</td>
+      <td class="mono" style="color:${getColor(r.upload,r.size,'u')}">${r.upload}</td>
+      <td class="mono" style="color:${getColor(r.download,r.size,'d')}">${r.download}</td>
+      <td>${r.network}</td>
+      <td style="font-size:11px;color:var(--text3)">${r.errors||'—'}</td>
+      <td><span class="dot ${dotClass(r.status)}"></span>${r.status}</td>
+    </tr>
+  `).join('');
+}
+
+function regionBadge(r) {
+  const m = {'APAC':'badge-apac','Europe':'badge-europe','N. America':'badge-na','LATAM':'badge-latam','MEA':'badge-mea'};
+  return m[r]||'badge-pending';
+}
+function dotClass(s) {
+  return s==='PASS'?'dot-green':s==='FAIL'?'dot-red':'dot-orange';
+}
+function getColor(val, sizeStr, dir) {
+  const s = sizeStr.replace(' MB','');
+  const kpi = KPI[s];
+  if (!kpi) return 'var(--text)';
+  const thr = dir==='u' ? kpi.upload : kpi.download;
+  const warn = dir==='u' ? kpi.warn : kpi.warnD;
+  if (val < thr) return 'var(--success)';
+  if (val < warn) return 'var(--warning)';
+  return 'var(--danger)';
+}
+
+// ── PLATFORM SELECT ────────────────────────────────────────────────────────
+function selectPlatform(p) {
+  selectedPlatform = p;
+  document.getElementById('card-veeva').className = 'platform-card' + (p==='veeva'?' selected-veeva':'');
+  document.getElementById('card-iqvia').className = 'platform-card' + (p==='iqvia'?' selected-iqvia':'');
+}
+
+// ── FILE SIZE SELECT ───────────────────────────────────────────────────────
+function selectFileSize(s) {
+  selectedFileSize = s;
+  ['1','10','100'].forEach(v => {
+    const el = document.getElementById('fs-'+v);
+    el.style.borderColor = v===s ? 'var(--accent)' : 'var(--border)';
+    el.style.background = v===s ? 'var(--accent-bg)' : '';
+  });
+  const hints = {'1':'Target: Upload < 3s, Download < 3s · Acceptable max: 5s · Failure: ≥ 5s',
+                 '10':'Target: Upload < 10s, Download < 10s · Acceptable max: 20s · Failure: ≥ 20s',
+                 '100':'Target: Upload < 60s, Download < 60s · Acceptable max: 90s · Failure: ≥ 90s (triggers Contract Exit Clause on Attempt 2)'};
+  document.getElementById('kpi-hint').style.display = 'flex';
+  document.getElementById('kpi-hint-text').textContent = hints[s];
+  calcAvg();
+}
+
+// ── AVG CALCULATION + LIVE KPI ─────────────────────────────────────────────
+function calcAvg() {
+  const uVals = [+document.getElementById('u1').value, +document.getElementById('u2').value, +document.getElementById('u3').value].filter(x => x > 0);
+  const dVals = [+document.getElementById('d1').value, +document.getElementById('d2').value, +document.getElementById('d3').value].filter(x => x > 0);
+
+  const uAvg = uVals.length ? (uVals.reduce((a,b)=>a+b,0)/uVals.length) : null;
+  const dAvg = dVals.length ? (dVals.reduce((a,b)=>a+b,0)/dVals.length) : null;
+
+  document.getElementById('uavg').value = uAvg ? uAvg.toFixed(2) : '';
+  document.getElementById('davg').value = dAvg ? dAvg.toFixed(2) : '';
+
+  if ((uAvg || dAvg) && selectedFileSize) {
+    document.getElementById('kpiLiveBox').style.display = 'block';
+    const kpi = KPI[selectedFileSize];
+    if (uAvg) {
+      const [txt, col] = uAvg < kpi.upload ? ['✓ PASS', 'var(--success)'] : uAvg < kpi.warn ? ['⚠ MARGINAL', 'var(--warning)'] : ['✗ FAIL', 'var(--danger)'];
+      document.getElementById('kpiUploadStatus').textContent = uAvg.toFixed(2) + 's — ' + txt;
+      document.getElementById('kpiUploadStatus').style.color = col;
+    }
+    if (dAvg) {
+      const [txt, col] = dAvg < kpi.download ? ['✓ PASS', 'var(--success)'] : dAvg < kpi.warnD ? ['⚠ MARGINAL', 'var(--warning)'] : ['✗ FAIL', 'var(--danger)'];
+      document.getElementById('kpiDownloadStatus').textContent = dAvg.toFixed(2) + 's — ' + txt;
+      document.getElementById('kpiDownloadStatus').style.color = col;
+    }
+  }
+}
+
+// ── TIMER ──────────────────────────────────────────────────────────────────
+function timerStart() {
+  if (timerRunning) return;
+  timerRunning = true;
+  timerStartMs = Date.now() - timerMs;
+  timerInterval = setInterval(updateTimer, 10);
+  document.getElementById('btnStart').disabled = true;
+  document.getElementById('btnStop').disabled = false;
+  document.getElementById('timerStatus').textContent = 'Running — timer active';
+  document.getElementById('timerDisplay').style.color = 'var(--success)';
+}
+function timerStop() {
+  if (!timerRunning) return;
+  clearInterval(timerInterval);
+  timerRunning = false;
+  timerMs = Date.now() - timerStartMs;
+  document.getElementById('btnStart').disabled = false;
+  document.getElementById('btnStop').disabled = true;
+  document.getElementById('timerStatus').textContent = 'Stopped — click Capture to record this time';
+  document.getElementById('timerDisplay').style.color = 'var(--warning)';
+}
+function timerReset() {
+  clearInterval(timerInterval);
+  timerRunning = false;
+  timerMs = 0;
+  document.getElementById('timerDisplay').textContent = '00:00.00';
+  document.getElementById('timerDisplay').style.color = 'var(--text)';
+  document.getElementById('btnStart').disabled = false;
+  document.getElementById('btnStop').disabled = true;
+  document.getElementById('timerStatus').textContent = 'Ready — press Start when transfer begins';
+}
+function updateTimer() {
+  timerMs = Date.now() - timerStartMs;
+  const total = Math.floor(timerMs / 10);
+  const cs = total % 100;
+  const secs = Math.floor(total / 100) % 60;
+  const mins = Math.floor(total / 6000);
+  document.getElementById('timerDisplay').textContent =
+    String(mins).padStart(2,'0') + ':' + String(secs).padStart(2,'0') + '.' + String(cs).padStart(2,'0');
+}
+function captureTime() {
+  if (timerMs === 0) { alert('Start and stop the timer first.'); return; }
+  const secs = (timerMs / 1000).toFixed(2);
+  // Fill next empty upload slot
+  for (const id of ['u1','u2','u3']) {
+    if (!document.getElementById(id).value) {
+      document.getElementById(id).value = secs;
+      calcAvg();
+      document.getElementById('timerStatus').textContent = 'Captured ' + secs + 's → ' + id.toUpperCase().replace('U','Upload Run ');
+      timerReset();
+      return;
+    }
+  }
+  // Then download
+  for (const id of ['d1','d2','d3']) {
+    if (!document.getElementById(id).value) {
+      document.getElementById(id).value = secs;
+      calcAvg();
+      document.getElementById('timerStatus').textContent = 'Captured ' + secs + 's → ' + id.toUpperCase().replace('D','Download Run ');
+      timerReset();
+      return;
+    }
+  }
+  alert('All 6 run slots filled. Reset a slot manually if needed.');
+}
+
+// ── JSONBIN HELPERS ────────────────────────────────────────────────────────
+async function loadResultsFromBin() {
+  if (!JSONBIN_API_KEY || !JSONBIN_BIN_ID) return;
+  try {
+    const res = await fetch(`${JSONBIN_BASE_URL}/${JSONBIN_BIN_ID}/latest`, {
+      headers: { 'X-Master-Key': JSONBIN_API_KEY }
+    });
+    if (!res.ok) return;
+    const data = await res.json();
+    const records = Array.isArray(data.record) ? data.record : [];
+    RESULTS_DB.length = 0;
+    records.forEach(r => RESULTS_DB.push(r));
+    RESULTS_DB.sort((a,b) => b.date.localeCompare(a.date));
+    refreshDashboard();
+  } catch(e) { console.warn('JSONBin load:', e); }
+}
+
+async function saveResultsToBin() {
+  if (!JSONBIN_API_KEY || !JSONBIN_BIN_ID) return false;
+  try {
+    const res = await fetch(`${JSONBIN_BASE_URL}/${JSONBIN_BIN_ID}`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json', 'X-Master-Key': JSONBIN_API_KEY },
+      body: JSON.stringify(RESULTS_DB)
+    });
+    return res.ok;
+  } catch(e) { console.warn('JSONBin save:', e); return false; }
+}
+
+// ── SUBMIT MODAL ───────────────────────────────────────────────────────────
+function openSubmitModal() {
+  const missing = [];
+  if (!document.getElementById('f_name').value.trim())  missing.push('Full Name');
+  if (!document.getElementById('f_email').value.trim()) missing.push('Email');
+  if (!document.getElementById('f_region').value)       missing.push('Region');
+  if (!document.getElementById('f_country').value)      missing.push('Country');
+  if (!document.getElementById('f_network').value)      missing.push('Network Type');
+  if (!selectedPlatform)                                 missing.push('Platform');
+  if (!selectedFileSize)                                 missing.push('File Size');
+  if (!document.getElementById('f_url').value.trim())   missing.push('Environment URL');
+  const uavg = document.getElementById('uavg').value;
+  const davg = document.getElementById('davg').value;
+  if (!uavg) missing.push('Upload times (min 1 run)');
+  if (!davg) missing.push('Download times (min 1 run)');
+
+  if (missing.length > 0) {
+    alert('⚠ Por favor completa los siguientes campos antes de enviar:\n\n• ' + missing.join('\n• '));
+    return;
+  }
+
+  const binOk = JSONBIN_API_KEY && JSONBIN_BIN_ID;
+  const modeMsg = binOk
+    ? `<div class="alert alert-success" style="margin-top:10px"><span>☁</span> <b>JSONBin configurado.</b> Los resultados se guardarán automáticamente y serán visibles para todo el equipo en tiempo real.</div>`
+    : `<div class="alert alert-warn" style="margin-top:10px"><span>⚠</span> <b>JSONBin no configurado.</b> Resultados guardados solo en memoria. Configura JSONBIN_API_KEY y JSONBIN_BIN_ID en el HTML.</div>`;
+
+  document.getElementById('submitSummary').innerHTML = `
+    <b>Tester:</b> ${document.getElementById('f_name').value} &nbsp;(${document.getElementById('f_region').value} · ${document.getElementById('f_country').value})<br>
+    <b>Platform:</b> ${selectedPlatform==='veeva'?'Veeva Vault':'IQVIA SmartSolve'} &nbsp;·&nbsp;
+    <b>File size:</b> ${selectedFileSize} MB<br>
+    <b>Upload avg:</b> ${uavg} s &nbsp;·&nbsp; <b>Download avg:</b> ${davg} s &nbsp;·&nbsp;
+    <b>Network:</b> ${document.getElementById('f_network').value}
+  ` + modeMsg;
+
+  document.getElementById('modalBody').style.display = 'block';
+  document.getElementById('modalSuccess').style.display = 'none';
+  document.getElementById('submitModal').classList.add('open');
+}
+
+function closeModal() {
+  if (isSubmitting) return;
+  document.getElementById('submitModal').classList.remove('open');
+}
+
+async function confirmSubmit() {
+  if (isSubmitting) return;
+  isSubmitting = true;
+  const btnConfirm = document.querySelector('#modalBody .btn-primary');
+  btnConfirm.textContent = '⏳ Guardando…';
+  btnConfirm.disabled = true;
+
+  const uavg   = parseFloat(document.getElementById('uavg').value) || 0;
+  const davg   = parseFloat(document.getElementById('davg').value) || 0;
+  const u1     = document.getElementById('u1').value || '';
+  const u2     = document.getElementById('u2').value || '';
+  const u3     = document.getElementById('u3').value || '';
+  const d1     = document.getElementById('d1').value || '';
+  const d2     = document.getElementById('d2').value || '';
+  const d3     = document.getElementById('d3').value || '';
+  const size   = selectedFileSize + ' MB';
+  const kpi    = KPI[selectedFileSize];
+  const nowUTC = new Date().toISOString().replace('T',' ').slice(0,19) + ' UTC';
+
+  let status = 'PASS';
+  if (uavg >= kpi.warn || davg >= kpi.warnD) status = 'FAIL';
+  else if (uavg >= kpi.upload || davg >= kpi.download) status = 'MARGINAL';
+
+  const record = {
+    date:         nowUTC,
+    testDatetime: document.getElementById('f_datetime').value + ' UTC',
+    tester:       document.getElementById('f_name').value.trim(),
+    email:        document.getElementById('f_email').value.trim(),
+    region:       document.getElementById('f_region').value,
+    country:      document.getElementById('f_country').value,
+    network:      document.getElementById('f_network').value,
+    platform:     selectedPlatform === 'veeva' ? 'Veeva' : 'IQVIA',
+    url:          document.getElementById('f_url').value.trim(),
+    size,
+    uploadRun1: u1, uploadRun2: u2, uploadRun3: u3,
+    upload:     uavg,
+    downloadRun1: d1, downloadRun2: d2, downloadRun3: d3,
+    download:   davg,
+    errors:       document.getElementById('f_errors').value.trim() || '',
+    observations: document.getElementById('f_notes').value.trim() || '',
+    status
+  };
+
+  RESULTS_DB.unshift(record);
+
+  let savedOk = false;
+  if (JSONBIN_API_KEY && JSONBIN_BIN_ID) {
+    savedOk = await saveResultsToBin();
+  }
+
+  const successMsg = savedOk
+    ? '✅ Guardado en la nube · Visible para todo el equipo en tiempo real · Dashboard actualizado'
+    : (JSONBIN_API_KEY
+      ? '⚠ Error al guardar en JSONBin. Dato guardado localmente. Recarga para reintentar.'
+      : '⚠ Guardado solo en memoria (JSONBin no configurado). Exporta desde Results → Export Excel.');
+
+  document.getElementById('modalSuccess').querySelector('div:nth-child(2)').textContent = 'Resultado Guardado';
+  document.getElementById('modalSuccess').querySelector('div:nth-child(3)').innerHTML = successMsg;
+  document.getElementById('modalBody').style.display = 'none';
+  document.getElementById('modalSuccess').style.display = 'block';
+
+  btnConfirm.textContent = '✓ Confirm & Submit';
+  btnConfirm.disabled = false;
+  isSubmitting = false;
+  refreshDashboard();
+  resetForm();
+}
+
+function resetForm() {
+  // Clear the execute form for next test run
+  document.getElementById('f_name').value = '';
+  document.getElementById('f_email').value = '';
+  document.getElementById('f_region').value = '';
+  document.getElementById('f_country').value = '';
+  document.getElementById('f_network').value = '';
+  document.getElementById('f_url').value = '';
+  document.getElementById('f_errors').value = '';
+  document.getElementById('f_notes').value = '';
+  ['u1','u2','u3','d1','d2','d3','uavg','davg'].forEach(id => document.getElementById(id).value = '');
+  selectedPlatform = null;
+  selectedFileSize = null;
+  document.getElementById('card-veeva').className = 'platform-card';
+  document.getElementById('card-iqvia').className = 'platform-card';
+  ['1','10','100'].forEach(v => {
+    document.getElementById('fs-'+v).style.borderColor = 'var(--border)';
+    document.getElementById('fs-'+v).style.background = '';
+  });
+  document.getElementById('kpi-hint').style.display = 'none';
+  document.getElementById('kpiLiveBox').style.display = 'none';
+  timerReset();
+}
+
+// ── EXPORT CSV (fallback when PA not configured) ───────────────────────────
+function exportResultsCSV() {
+  if (RESULTS_DB.length === 0) {
+    alert('No results to export yet. Submit at least one test run first.');
+    return;
+  }
+  const headers = ['#','Submission Date (UTC)','Tester Name','Region','Country','Platform',
+    'File Size','Upload Avg (s)','Download Avg (s)','Network','Errors','KPI Status'];
+  const rows = RESULTS_DB.map((r, i) => [
+    i+1, r.date, r.tester, r.region, r.country,
+    r.platform === 'Veeva' ? 'Veeva Vault' : 'IQVIA SmartSolve',
+    r.size, r.upload, r.download, r.network,
+    '"' + (r.errors||'').replace(/"/g,'""') + '"', r.status
+  ]);
+  const csv = [headers, ...rows].map(r => r.join(',')).join('\n');
+  const blob = new Blob([csv], { type: 'text/csv' });
+  const url  = URL.createObjectURL(blob);
+  const a    = document.createElement('a');
+  a.href = url;
+  a.download = 'QMA_Results_' + new Date().toISOString().slice(0,10) + '.csv';
+  a.click();
+  URL.revokeObjectURL(url);
+}
+
+// ── CHARTS ─────────────────────────────────────────────────────────────────
+window.addEventListener('load', () => {
+  // Set default datetime
+  const now = new Date();
+  now.setMinutes(now.getMinutes() - now.getTimezoneOffset());
+  document.getElementById('f_datetime').value = now.toISOString().slice(0,16);
+
+  // Show JSONBin connection status
+  const chip = document.getElementById('pa-status-chip');
+  const txt  = document.getElementById('pa-status-text');
+  if (JSONBIN_API_KEY && JSONBIN_BIN_ID) {
+    chip.style.background  = 'var(--success-bg)';
+    chip.style.color       = 'var(--success)';
+    chip.style.borderColor = '#8ecbb0';
+    txt.textContent = 'JSONBin: conectado ✓';
+    loadResultsFromBin();
+  } else {
+    chip.style.background  = 'var(--warning-bg)';
+    chip.style.color       = 'var(--warning)';
+    chip.style.borderColor = '#f0d090';
+    txt.textContent = 'JSONBin: modo offline';
+  }
+
+  // Platform comparison bar chart — empty at start
+  window.chartPlatform = new Chart(document.getElementById('chartPlatform'), {
+    type: 'bar',
+    data: {
+      labels: ['1 MB Upload','1 MB Download','10 MB Upload','10 MB Download','100 MB Upload','100 MB Download'],
+      datasets: [
+        { label: 'Veeva Vault', data: [0,0,0,0,0,0], backgroundColor: '#0c6e8c', borderRadius: 3 },
+        { label: 'IQVIA SmartSolve', data: [0,0,0,0,0,0], backgroundColor: '#2d5a27', borderRadius: 3 }
+      ]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: { legend: { position: 'bottom', labels: { font: { family: 'DM Sans', size: 11 }, boxWidth: 10, padding: 12 } } },
+      scales: {
+        y: { beginAtZero: true, ticks: { font: { family: 'DM Sans', size: 10 } }, title: { display: true, text: 'Seconds', font: { family: 'DM Sans', size: 10 } } },
+        x: { ticks: { font: { family: 'DM Sans', size: 10 }, maxRotation: 30 } }
+      }
+    }
+  });
+
+  // Response time line chart — only KPI target line, no data
+  window.chartTimeBySize = new Chart(document.getElementById('chartTimeBySize'), {
+    type: 'line',
+    data: {
+      labels: ['1 MB', '10 MB', '100 MB'],
+      datasets: [
+        { label: 'Veeva Upload', data: [null, null, null], borderColor: '#0c6e8c', backgroundColor: 'rgba(12,110,140,0.08)', pointRadius: 4, borderWidth: 2 },
+        { label: 'IQVIA Upload', data: [null, null, null], borderColor: '#2d5a27', backgroundColor: 'rgba(45,90,39,0.08)', pointRadius: 4, borderWidth: 2, borderDash: [5,4] },
+        { label: 'KPI Target', data: [3, 10, 60], borderColor: '#c0392b', borderDash: [4,4], pointRadius: 0, borderWidth: 1.5, fill: false }
+      ]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: { legend: { position: 'bottom', labels: { font: { family: 'DM Sans', size: 11 }, boxWidth: 10, padding: 12 } } },
+      scales: {
+        y: { beginAtZero: true, ticks: { font: { family: 'DM Sans', size: 10 } } },
+        x: { ticks: { font: { family: 'DM Sans', size: 10 } } }
+      }
+    }
+  });
+
+  // Regional chart — empty
+  window.chartRegional = new Chart(document.getElementById('chartRegional'), {
+    type: 'bar',
+    data: {
+      labels: ['Europe', 'APAC', 'N. America', 'LATAM', 'MEA'],
+      datasets: [
+        { label: 'Veeva', data: [0,0,0,0,0], backgroundColor: '#0c6e8c', borderRadius: 3 },
+        { label: 'IQVIA', data: [0,0,0,0,0], backgroundColor: '#2d5a27', borderRadius: 3 }
+      ]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: { legend: { position: 'bottom', labels: { font: { family: 'DM Sans', size: 11 }, boxWidth: 10, padding: 12 } } },
+      scales: {
+        y: { beginAtZero: true, ticks: { font: { family: 'DM Sans', size: 10 } }, title: { display: true, text: 'Avg upload (s)', font: { family: 'DM Sans', size: 10 } } },
+        x: { ticks: { font: { family: 'DM Sans', size: 10 } } }
+      }
+    }
+  });
+
+  // Status donut — empty
+  window.chartStatus = new Chart(document.getElementById('chartStatus'), {
+    type: 'doughnut',
+    data: {
+      labels: ['Pass', 'Marginal', 'Fail'],
+      datasets: [{ data: [0, 0, 0], backgroundColor: ['#1e6b3e', '#e08c30', '#8b1d1d'], borderWidth: 0 }]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false, cutout: '65%',
+      plugins: { legend: { position: 'bottom', labels: { font: { family: 'DM Sans', size: 11 }, boxWidth: 10, padding: 12 } } }
+    }
+  });
+});
+
+// ── DASHBOARD REFRESH (called after each submit) ───────────────────────────
+function refreshDashboard() {
+  const total = RESULTS_DB.length;
+  const passes = RESULTS_DB.filter(r => r.status === 'PASS').length;
+  const fails = RESULTS_DB.filter(r => r.status === 'FAIL').length;
+  const marginals = RESULTS_DB.filter(r => r.status === 'MARGINAL').length;
+  const regionsWithData = [...new Set(RESULTS_DB.map(r => r.region))].length;
+  const passRate = total ? Math.round((passes / total) * 100) + '%' : '—';
+  const critFails = RESULTS_DB.filter(r => r.status === 'FAIL' && r.size === '100 MB').length;
+
+  document.getElementById('dash-total').textContent = total;
+  document.getElementById('dash-regions').textContent = regionsWithData + '/5';
+  document.getElementById('dash-passrate').textContent = passRate;
+  document.getElementById('dash-failures').textContent = critFails;
+
+  // Update recent table
+  const tb = document.getElementById('dashRecentBody');
+  if (total === 0) {
+    tb.innerHTML = `<tr><td colspan="9" style="text-align:center;padding:28px;color:var(--text3);font-size:13px">No test results yet · <a href="#" onclick="showPage('execute');return false;" style="color:var(--accent)">Execute the first test</a></td></tr>`;
+  } else {
+    tb.innerHTML = RESULTS_DB.slice(0, 5).map((r) => `
+      <tr>
+        <td class="mono" style="font-size:11px">${r.date}</td>
+        <td>${r.tester}</td>
+        <td><span class="badge ${regionBadge(r.region)}">${r.region}</span></td>
+        <td><span class="badge ${r.platform==='Veeva'?'badge-veeva':'badge-iqvia'}">${r.platform}</span></td>
+        <td>${r.size}</td>
+        <td class="mono" style="color:${getColor(r.upload,r.size,'u')}">${r.upload}</td>
+        <td class="mono" style="color:${getColor(r.download,r.size,'d')}">${r.download}</td>
+        <td>${r.network}</td>
+        <td><span class="dot ${dotClass(r.status)}"></span>${r.status}</td>
+      </tr>
+    `).join('');
+  }
+
+  // Update charts with real data
+  if (window.chartStatus) {
+    window.chartStatus.data.datasets[0].data = [passes, marginals, fails];
+    window.chartStatus.update();
+  }
+}
+</script>
+</body>
+</html>
